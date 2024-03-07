@@ -1,17 +1,23 @@
 "use client";
-import { PRODUCT_CATEGORIES } from "@/config";
 import { Menu, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
+import { useRef } from "react";
+
+import { PRODUCT_CATEGORIES } from "@/config";
+import { useOnClickOutside } from "@/hooks/use-onclick-ouside-div";
 
 const MobileNavbar = () => {
   const [isOpen, setIsopen] = useState<boolean>(false);
+  const mobileNavbarRef = useRef<HTMLDivElement | null>(null);
+
+  useOnClickOutside(mobileNavbarRef, () => setIsopen(false));
 
   if (!isOpen) {
     return (
       <button
-        className="lg:hidden relative inline-flex items-center justify-end rounded-md p-2 text-gray-400 border border-rose-500 grow"
+        className="lg:hidden relative inline-flex items-center justify-end rounded-md p-2 text-gray-400 grow"
         onClick={() => setIsopen(true)}
       >
         <Menu />
@@ -19,15 +25,18 @@ const MobileNavbar = () => {
     );
   }
   return (
-    <div>
+    <div className="grow lg:hidden">
       <div className="relative z-40 lg:hidden">
         <div className="fixed inset-0 bg-black bg-opacity-25" />
       </div>
 
-      <div className="fixed overflow-y-scroll overscroll-y-none inset-0 z-40 flex">
-        <div className="w-4/5">
-          <div className="relative flex w-full max-w-sm flex-col overflow-y-auto bg-white pb-12 shadow-xl">
-            <div className="flex px-4 pb-2 pt-5">
+      <div className="fixed right-0 top-0 overflow-y-scroll overscroll-y-none inset-0 z-40 flex justify-end">
+        <div
+          className="w-4/5 md:w-3/5 border border-red-600"
+          ref={mobileNavbarRef}
+        >
+          <div className="relative flex w-full flex-col overflow-y-auto bg-white pb-12 shadow-xl">
+            <div className="flex justify-end px-4 pb-2 pt-5">
               <button
                 type="button"
                 onClick={() => setIsopen(false)}
