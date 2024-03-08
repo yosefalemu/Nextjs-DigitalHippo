@@ -27,14 +27,11 @@ const MobileNavbar = () => {
   return (
     <div className="grow lg:hidden">
       <div className="relative z-40 lg:hidden">
-        <div className="fixed inset-0 bg-black bg-opacity-25" />
+        <div className="fixed inset-0 bg-black bg-opacity-75" />
       </div>
 
       <div className="fixed right-0 top-0 overflow-y-scroll overscroll-y-none inset-0 z-40 flex justify-end">
-        <div
-          className="w-4/5 md:w-3/5 border border-red-600"
-          ref={mobileNavbarRef}
-        >
+        <div className="w-4/5 md:w-3/5" ref={mobileNavbarRef}>
           <div className="relative flex w-full flex-col overflow-y-auto bg-white pb-12 shadow-xl">
             <div className="flex justify-end px-4 pb-2 pt-5">
               <button
