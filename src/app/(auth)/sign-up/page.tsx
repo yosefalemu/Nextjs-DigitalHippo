@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { ArrowRight, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -15,9 +15,13 @@ import {
   AuthCredentialValidator,
   TAuthCredentialValidator,
 } from "@/validators/auth-validators";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 const SignUp = () => {
+  const router = useRouter();
   const [visible, setVisible] = useState<boolean>(true);
+  const [error, setError] = useState<string>("");
   const {
     register,
     handleSubmit,
@@ -27,13 +31,30 @@ const SignUp = () => {
     resolver: zodResolver(AuthCredentialValidator),
   });
 
-  const { data } = trpc.anyApiRoute.useQuery();
-  console.log("data that return from the api", data);
-
   const handleInputChange = (fieldName: string) => {
     console.log("handle Input change", fieldName);
     clearErrors(fieldName as keyof TAuthCredentialValidator);
   };
+
+  const { mutate, isLoading } = trpc.auth.createUser.useMutation({
+    onError: (err) => {
+      console.log("Error in signup", err.message);
+
+      if (err.data?.code === "CONFLICT") {
+        setError(err.message);
+        return;
+      }
+    },
+    // onSuccess: ({ sendToEmail }) => {
+    //   router.push("/verify-email?to=" + sendToEmail);
+    // },
+  });
+
+  useEffect(() => {
+    setTimeout(() => {
+      setError("");
+    }, 6000);
+  }, [error]);
 
   const onSubmit = ({
     firstName,
@@ -42,11 +63,8 @@ const SignUp = () => {
     email,
     password,
   }: TAuthCredentialValidator) => {
-    console.log("first name", firstName);
-    console.log("last name", lastName);
-    console.log("user name", userName);
     console.log("email", email);
-    console.log("password", password);
+    mutate({ firstName, lastName, userName, email, password });
   };
 
   return (
@@ -65,6 +83,9 @@ const SignUp = () => {
             <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
+        {error && (
+          <div className="bg-red-600 text-white rounded-sm p-2">{error}</div>
+        )}
         <div className="grid gap-6">
           <form onSubmit={handleSubmit(onSubmit)}>
             <div className="grid gap-2">
@@ -176,9 +197,15 @@ const SignUp = () => {
                   </p>
                 )}
               </div>
-              <Button className={(buttonVariants({ size: "lg" }), "mb-36")}>
-                Sign up
-              </Button>
+              {isLoading ? (
+                <Button className={(buttonVariants({ size: "lg" }), "mb-36")}>
+                  Loading...
+                </Button>
+              ) : (
+                <Button className={(buttonVariants({ size: "lg" }), "mb-36")}>
+                  Sign up
+                </Button>
+              )}
             </div>
           </form>
         </div>
