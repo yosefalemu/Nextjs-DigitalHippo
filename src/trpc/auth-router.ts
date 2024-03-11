@@ -1,12 +1,13 @@
-import { AuthCredentialValidator } from "../validators/auth-validators"
+import { SignUpCredentialValidator } from "../validators/signup-validators"
 import { publicProcedure, router } from "./trpc"
 import { getPayloadClient } from "../get-payload"
 import { TRPCError } from "@trpc/server"
 import { z } from "zod"
+import { SignInCredentialValidator } from "../validators/signin-validators"
 
 export const authRouter = router({
     createUser: publicProcedure
-        .input(AuthCredentialValidator)
+        .input(SignUpCredentialValidator)
         .mutation(async ({ input }) => {
             const { firstName, lastName, userName, email, password } = input
             console.log("input from user", input);
@@ -69,18 +70,62 @@ export const authRouter = router({
         .input(z.object({ token: z.string() }))
         .query(async ({ input }) => {
             const { token } = input
-
+            console.log("input in the auth router", token);
             const payload = await getPayloadClient()
 
             const isVerified = await payload.verifyEmail({
                 collection: 'users',
                 token,
             })
+            console.log("is verified in the authrounter", isVerified);
 
             if (!isVerified)
                 throw new TRPCError({ code: 'UNAUTHORIZED' })
 
             return { success: true }
         }),
+    signIn: publicProcedure
+        .input(SignInCredentialValidator)
+        .mutation(async ({ input, ctx }) => {
+            const { email, password } = input
+            console.log("email", email);
+            console.log("password", password);
+            const { res } = ctx
+            console.log("response in auth router", res);
+            const payload = await getPayloadClient()
+            const { docs: registerUser } = await payload.find({
+                collection: "users",
+                where: {
+                    email: {
+                        equals: email
+                    }
+                }
+            })
+            console.log("register user", registerUser);
+            console.log("New");
 
+            if (registerUser?.length === 0) {
+                throw new TRPCError({
+                    code: "UNAUTHORIZED",
+                    message: "Invalid email"
+                })
+            }
+            try {
+                await payload.login({
+                    collection: "users",
+                    data: {
+                        email,
+                        password
+                    },
+                    res
+                })
+
+            } catch (error) {
+                throw new TRPCError({
+                    code: "UNAUTHORIZED",
+                    message: "Incorrect password"
+                })
+            }
+            return { success: true }
+        })
 })

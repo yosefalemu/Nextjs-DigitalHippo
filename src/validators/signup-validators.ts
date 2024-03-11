@@ -1,6 +1,6 @@
 import { z } from "zod"
 
-export const AuthCredentialValidator = z.object({
+export const SignUpCredentialValidator = z.object({
     firstName: z
         .string({
             required_error: "First name is required",
@@ -21,11 +21,9 @@ export const AuthCredentialValidator = z.object({
         })
         .min(6, { message: "User name should be atleast 6 characters long" }),
     email: z
-        .string({
-            required_error: "Email is required",
-            invalid_type_error: "Invalid email",
-        })
-        .email(),
+        .string()
+        .min(1, { message: "Email is required" })
+        .email("Invalid email"),
     password: z
         .string({ required_error: "Password is required" })
         .min(8, { message: "Password must be atleast 8 characters long" })
@@ -38,4 +36,4 @@ export const AuthCredentialValidator = z.object({
         ),
 });
 
-export type TAuthCredentialValidator = z.infer<typeof AuthCredentialValidator>;
+export type TSignUpCredentialValidator = z.infer<typeof SignUpCredentialValidator>;
