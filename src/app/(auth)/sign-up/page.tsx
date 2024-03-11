@@ -4,7 +4,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import { ArrowRight, Eye, EyeOff } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { z } from "zod";
@@ -12,9 +12,9 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { trpc } from "@/trpc/client";
 import {
-  AuthCredentialValidator,
-  TAuthCredentialValidator,
-} from "@/validators/auth-validators";
+  SignUpCredentialValidator,
+  TSignUpCredentialValidator,
+} from "@/validators/signup-validators";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
@@ -22,39 +22,41 @@ const SignUp = () => {
   const router = useRouter();
   const [visible, setVisible] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
+  const [emailSend, setEmailSend] = useState<string>("");
   const {
     register,
     handleSubmit,
     clearErrors,
     formState: { errors },
-  } = useForm<TAuthCredentialValidator>({
-    resolver: zodResolver(AuthCredentialValidator),
+  } = useForm<TSignUpCredentialValidator>({
+    resolver: zodResolver(SignUpCredentialValidator),
   });
 
   const handleInputChange = (fieldName: string) => {
-    console.log("handle Input change", fieldName);
-    clearErrors(fieldName as keyof TAuthCredentialValidator);
+    clearErrors(fieldName as keyof TSignUpCredentialValidator);
   };
+
+  useEffect(() => {
+    setTimeout(() => {
+      setError("");
+      setEmailSend("");
+    }, 6000);
+  }, [error]);
 
   const { mutate, isLoading } = trpc.auth.createUser.useMutation({
     onError: (err) => {
-      console.log("Error in signup", err.message);
-
       if (err.data?.code === "CONFLICT") {
         setError(err.message);
         return;
       }
     },
-    // onSuccess: ({ sendToEmail }) => {
-    //   router.push("/verify-email?to=" + sendToEmail);
-    // },
+    onSuccess: ({ sentToEmail }) => {
+      setEmailSend("Verification link is send to your email");
+      setTimeout(() => {
+        router.push("/verify-email?to=" + sentToEmail);
+      }, 4000);
+    },
   });
-
-  useEffect(() => {
-    setTimeout(() => {
-      setError("");
-    }, 6000);
-  }, [error]);
 
   const onSubmit = ({
     firstName,
@@ -62,8 +64,7 @@ const SignUp = () => {
     userName,
     email,
     password,
-  }: TAuthCredentialValidator) => {
-    console.log("email", email);
+  }: TSignUpCredentialValidator) => {
     mutate({ firstName, lastName, userName, email, password });
   };
 
@@ -84,7 +85,14 @@ const SignUp = () => {
           </Link>
         </div>
         {error && (
-          <div className="bg-red-600 text-white rounded-sm p-2">{error}</div>
+          <div className="bg-red-600 text-white rounded-sm px-3 py-2 text-center">
+            {error}
+          </div>
+        )}
+        {emailSend && (
+          <div className="bg-green-600 text-white rounded-sm px-3 py-2 text-center">
+            {emailSend}
+          </div>
         )}
         <div className="grid gap-6">
           <form onSubmit={handleSubmit(onSubmit)}>
@@ -166,7 +174,23 @@ const SignUp = () => {
               </div>
               <div className="grid gap-2 py-2">
                 <Label htmlFor="password">Password</Label>
-                <div className="flex gap-2 py-2">
+                <div className="flex gap-2 py-2 relative">
+                  <div className="absolute right-2.5 top-1/2 transform -translate-y-1/2">
+                    {visible ? (
+                      <EyeOff
+                        size={22}
+                        className="cursor-pointer text-primary"
+                        onClick={() => setVisible(!visible)}
+                      />
+                    ) : (
+                      <Eye
+                        size={22}
+                        className="cursor-pointer text-primary"
+                        onClick={() => setVisible(!visible)}
+                      />
+                    )}
+                  </div>
+
                   <Input
                     {...register("password")}
                     placeholder="Password"
@@ -179,17 +203,6 @@ const SignUp = () => {
                     )}
                     onChange={() => handleInputChange("password")}
                   />
-                  {visible ? (
-                    <EyeOff
-                      className="h-10 w-10 cursor-pointer text-primary"
-                      onClick={() => setVisible(!visible)}
-                    />
-                  ) : (
-                    <Eye
-                      className="h-10 w-10 cursor-pointer text-primary"
-                      onClick={() => setVisible(!visible)}
-                    />
-                  )}
                 </div>
                 {errors?.password && (
                   <p className="text-sm text-red-500">
@@ -198,12 +211,28 @@ const SignUp = () => {
                 )}
               </div>
               {isLoading ? (
-                <Button className={(buttonVariants({ size: "lg" }), "mb-36")}>
-                  Loading...
+                <Button
+                  className={buttonVariants({
+                    size: "lg",
+                    className: "disabled:cursor-not-allowed",
+                  })}
+                  disabled={isLoading}
+                >
+                  Processing
+                  <Loader2
+                    size={22}
+                    className="animate-spin text-zinc-300 ml-2"
+                  />
                 </Button>
               ) : (
-                <Button className={(buttonVariants({ size: "lg" }), "mb-36")}>
-                  Sign up
+                <Button
+                  className={buttonVariants({
+                    size: "lg",
+                    className: "disabled:cursor-not-allowed",
+                  })}
+                  disabled={error !== "" || emailSend !== ""}
+                >
+                  Sign in
                 </Button>
               )}
             </div>
