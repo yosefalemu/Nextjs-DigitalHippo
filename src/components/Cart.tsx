@@ -16,7 +16,7 @@ import { buttonVariants } from "./ui/button";
 import { formatPrice } from "@/lib/utils";
 
 const Cart = () => {
-  const amount = 10;
+  const amount = 6;
   const fee = 250;
   const total = 1000;
   const products = [
@@ -53,7 +53,7 @@ const Cart = () => {
       <SheetTrigger className="group flex items-center -ml-2 p-2 relative">
         <ShoppingCart className="h-6 w-6 flex-shrink-0 text-gray-400 group-hover:text-gray-500" />
         {amount > 0 && (
-          <span className="h-6 w-6 flex items-center justify-center bg-blue-600 absolute top-0 -right-1/3 text-sm font-medium text-white rounded-full">
+          <span className="h-5 w-5 flex items-center justify-center bg-blue-600 absolute top-0 -right-[15%] text-xs font-medium text-white rounded-full">
             {amount}
           </span>
         )}

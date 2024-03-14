@@ -17,13 +17,12 @@ import {
   TSignInCredentialValidator,
 } from "@/validators/signin-validators";
 import { useRouter, useSearchParams } from "next/navigation";
+import { toast } from "sonner";
 
 const SignIn = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [visible, setVisible] = useState<boolean>(true);
-  const [error, setError] = useState<string>("");
-  const [success, setSuccess] = useState<string>("");
   const isSeller = searchParams.get("as") === "seller";
   const origin = searchParams.get("origin");
 
@@ -46,20 +45,13 @@ const SignIn = () => {
   const handleInputChange = (fieldName: string) => {
     clearErrors(fieldName as keyof TSignInCredentialValidator);
   };
-  useEffect(() => {
-    setTimeout(() => {
-      setError("");
-      setSuccess("");
-    }, 4000);
-  }, [error, success]);
 
-  const { isError, isLoading, mutate } = trpc.auth.signIn.useMutation({
+  const { isLoading, mutate, isSuccess } = trpc.auth.signIn.useMutation({
     onError: (err: any) => {
-      console.log("Login error in signin", err.message);
-      setError(err.message);
+      toast.error(err.message);
     },
     onSuccess: () => {
-      setSuccess("Signed in successfully");
+      toast.success("Signed in successfully");
       router.refresh();
       if (origin) {
         router.push(`/${origin}`);
@@ -71,13 +63,11 @@ const SignIn = () => {
       }
       setTimeout(() => {
         router.push("/");
-      }, 4000);
+      }, 2000);
     },
   });
 
   const onSubmit = ({ email, password }: TSignInCredentialValidator) => {
-    console.log("email", email);
-    console.log("password", password);
     mutate({ email, password });
   };
 
@@ -98,16 +88,6 @@ const SignIn = () => {
           </Link>
         </div>
         <div className="grid gap-6">
-          {error && (
-            <p className="bg-red-500 text-white px-3 py-2 rounded-sm text-center">
-              {error}
-            </p>
-          )}
-          {success && (
-            <p className="bg-green-500 text-white px-3 py-2 rounded-sm text-center">
-              {success}
-            </p>
-          )}
           <form onSubmit={handleSubmit(onSubmit)}>
             <div className="grid gap-2">
               <div className="grid gap-2 py-2">
@@ -181,7 +161,7 @@ const SignIn = () => {
                     size: "lg",
                     className: "disabled:cursor-not-allowed",
                   })}
-                  disabled={error !== "" || success !== ""}
+                  disabled={isSuccess}
                 >
                   Sign in
                 </Button>
