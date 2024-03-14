@@ -10,8 +10,6 @@ export const authRouter = router({
         .input(SignUpCredentialValidator)
         .mutation(async ({ input }) => {
             const { firstName, lastName, userName, email, password } = input
-            console.log("input from user", input);
-
             const payload = await getPayloadClient()
             const { docs: users } = await payload.find({
                 collection: "users",
@@ -30,19 +28,15 @@ export const authRouter = router({
                     ]
                 }
             })
-            console.log("user found", users);
-
             if (users.length !== 0) {
                 const userNameTaken = users.find(user => user.userName === userName)
                 const emailTaken = users.find(user => user.email === email)
                 if (userNameTaken) {
-                    console.log("User name is taken");
                     throw new TRPCError({
                         code: "CONFLICT",
                         message: "username is taken"
                     })
                 } else if (emailTaken) {
-                    console.log("Email is taken");
                     throw new TRPCError({
                         code: "CONFLICT",
                         message: "Email is taken"
@@ -51,8 +45,6 @@ export const authRouter = router({
 
                 }
             }
-            console.log("No user with this credentials");
-
             await payload.create({
                 collection: "users",
                 data: {
@@ -70,15 +62,12 @@ export const authRouter = router({
         .input(z.object({ token: z.string() }))
         .query(async ({ input }) => {
             const { token } = input
-            console.log("input in the auth router", token);
             const payload = await getPayloadClient()
 
             const isVerified = await payload.verifyEmail({
                 collection: 'users',
                 token,
             })
-            console.log("is verified in the authrounter", isVerified);
-
             if (!isVerified)
                 throw new TRPCError({ code: 'UNAUTHORIZED' })
 
@@ -88,10 +77,7 @@ export const authRouter = router({
         .input(SignInCredentialValidator)
         .mutation(async ({ input, ctx }) => {
             const { email, password } = input
-            console.log("email", email);
-            console.log("password", password);
             const { res } = ctx
-            console.log("response in auth router", res);
             const payload = await getPayloadClient()
             const { docs: registerUser } = await payload.find({
                 collection: "users",
@@ -101,9 +87,6 @@ export const authRouter = router({
                     }
                 }
             })
-            console.log("register user", registerUser);
-            console.log("New");
-
             if (registerUser?.length === 0) {
                 throw new TRPCError({
                     code: "UNAUTHORIZED",

@@ -21,8 +21,6 @@ import { useRouter } from "next/navigation";
 const SignUp = () => {
   const router = useRouter();
   const [visible, setVisible] = useState<boolean>(true);
-  const [error, setError] = useState<string>("");
-  const [emailSend, setEmailSend] = useState<string>("");
   const {
     register,
     handleSubmit,
@@ -36,25 +34,15 @@ const SignUp = () => {
     clearErrors(fieldName as keyof TSignUpCredentialValidator);
   };
 
-  useEffect(() => {
-    setTimeout(() => {
-      setError("");
-      setEmailSend("");
-    }, 6000);
-  }, [error]);
-
-  const { mutate, isLoading } = trpc.auth.createUser.useMutation({
+  const { mutate, isLoading, isSuccess } = trpc.auth.createUser.useMutation({
     onError: (err) => {
       if (err.data?.code === "CONFLICT") {
-        setError(err.message);
-        return;
+        toast.error(err.message);
       }
     },
     onSuccess: ({ sentToEmail }) => {
-      setEmailSend("Verification link is send to your email");
-      setTimeout(() => {
-        router.push("/verify-email?to=" + sentToEmail);
-      }, 4000);
+      toast.success("Verification link is send to your email");
+      router.push("/verify-email?to=" + sentToEmail);
     },
   });
 
@@ -84,16 +72,6 @@ const SignUp = () => {
             <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
-        {error && (
-          <div className="bg-red-600 text-white rounded-sm px-3 py-2 text-center">
-            {error}
-          </div>
-        )}
-        {emailSend && (
-          <div className="bg-green-600 text-white rounded-sm px-3 py-2 text-center">
-            {emailSend}
-          </div>
-        )}
         <div className="grid gap-6">
           <form onSubmit={handleSubmit(onSubmit)}>
             <div className="grid gap-2">
@@ -230,7 +208,7 @@ const SignUp = () => {
                     size: "lg",
                     className: "disabled:cursor-not-allowed",
                   })}
-                  disabled={error !== "" || emailSend !== ""}
+                  disabled={isSuccess}
                 >
                   Sign in
                 </Button>

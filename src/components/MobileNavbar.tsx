@@ -1,5 +1,5 @@
 "use client";
-import { Menu, X } from "lucide-react";
+import { ExternalLink, LogOut, Menu, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
@@ -7,10 +7,18 @@ import { useRef } from "react";
 
 import { PRODUCT_CATEGORIES } from "@/config";
 import { useOnClickOutside } from "@/hooks/use-onclick-ouside-div";
+import { User } from "@/payload-types";
+import { useAuth } from "@/hooks/use-auth";
 
-const MobileNavbar = () => {
+const MobileNavbar = ({ user }: { user: User | null }) => {
+  const { signOut } = useAuth();
   const [isOpen, setIsopen] = useState<boolean>(false);
   const mobileNavbarRef = useRef<HTMLDivElement | null>(null);
+
+  const handleLogout = () => {
+    signOut();
+    setIsopen(false);
+  };
 
   useOnClickOutside(mobileNavbarRef, () => setIsopen(false));
 
@@ -43,7 +51,44 @@ const MobileNavbar = () => {
               </button>
             </div>
 
-            <div className="mt-2">
+            <div className="space-y-1 border-b border-gray-200 px-4 py-2">
+              {user ? (
+                <div className="flex flex-col gap-4">
+                  <div className="flow-root">{user?.email}</div>
+                  <Link href="/sell" className="flex gap-2 text-primary">
+                    <ExternalLink size={22} className="text-primary" />
+                    Seller Dashboard
+                  </Link>
+                  <div
+                    className="flex gap-2 text-red-600"
+                    onClick={handleLogout}
+                  >
+                    <LogOut className="text-red-600 mr-2" size={22} />
+                    Log out
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className="flow-root">
+                    <Link
+                      href="/sign-in"
+                      className="-m-2 block p-2 font-medium text-gray-900"
+                    >
+                      Sign in
+                    </Link>
+                  </div>
+                  <div className="flow-root">
+                    <Link
+                      href="/sign-up"
+                      className="-m-2 block p-2 font-medium text-gray-900"
+                    >
+                      Sign up
+                    </Link>
+                  </div>
+                </>
+              )}
+            </div>
+            <div className="mt-0">
               <ul>
                 {PRODUCT_CATEGORIES.map((category) => (
                   <li
@@ -81,27 +126,6 @@ const MobileNavbar = () => {
                   </li>
                 ))}
               </ul>
-            </div>
-
-            <div className="space-y-6 border-t border-gray-200 px-4 py-6">
-              <div className="flow-root">
-                <Link
-                  //   onClick={() => closeOnCurrent('/sign-in')}
-                  href="/sign-in"
-                  className="-m-2 block p-2 font-medium text-gray-900"
-                >
-                  Sign in
-                </Link>
-              </div>
-              <div className="flow-root">
-                <Link
-                  //   onClick={() => closeOnCurrent('/sign-up')}
-                  href="/sign-up"
-                  className="-m-2 block p-2 font-medium text-gray-900"
-                >
-                  Sign up
-                </Link>
-              </div>
             </div>
           </div>
         </div>

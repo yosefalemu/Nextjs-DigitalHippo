@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
 
 import MaxWidthWrapper from "./MaxWidthWrapper";
 import { Icons } from "./Icons";
@@ -7,9 +8,11 @@ import { buttonVariants } from "./ui/button";
 import UserAccount from "./UserAccountNavbar";
 import Cart from "./Cart";
 import MobileNavbar from "./MobileNavbar";
+import { getServerSideUser } from "@/lib/payload-utils";
 
-const NavBar = () => {
-  const user = true;
+const NavBar = async () => {
+  const nextCookies = cookies();
+  const { user } = await getServerSideUser(nextCookies);
   return (
     <div className="sticky bg-white h-16 top-0 z-50 inset-x-0">
       <header className="relative bg-white">
@@ -21,7 +24,7 @@ const NavBar = () => {
                   <Icons.logo className="h-10 w-10" />
                 </Link>
               </div>
-              <MobileNavbar />
+              <MobileNavbar user={user} />
               <div className="hidden z-50 lg:ml-8 lg:block lg:self-stretch">
                 <NavItems />
               </div>
@@ -39,7 +42,7 @@ const NavBar = () => {
                     <span className="h-6 w-px bg-gray-200" aria-hidden="true" />
                   )}
                   {user ? (
-                    <UserAccount />
+                    <UserAccount user={user} />
                   ) : (
                     <Link
                       href={"/sign-up"}
