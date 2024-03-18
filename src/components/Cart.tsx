@@ -1,3 +1,4 @@
+"use client";
 import { Option, ShoppingCart } from "lucide-react";
 import {
   Sheet,
@@ -14,64 +15,46 @@ import Link from "next/link";
 import Image from "next/image";
 import { buttonVariants } from "./ui/button";
 import { formatPrice } from "@/lib/utils";
+import { useCart } from "@/hooks/use-cart";
 
 const Cart = () => {
-  const amount = 6;
-  const fee = 250;
-  const total = 1000;
-  const products = [
-    { id: 1, productName: "car" },
-    { id: 2, productName: "house" },
-    { id: 1, productName: "car" },
-    { id: 2, productName: "house" },
-    { id: 1, productName: "car" },
-    { id: 2, productName: "house" },
-    { id: 1, productName: "car" },
-    { id: 2, productName: "house" },
-    { id: 1, productName: "car" },
-    { id: 2, productName: "house" },
-    { id: 1, productName: "car" },
-    { id: 2, productName: "house" },
-    { id: 1, productName: "car" },
-    { id: 2, productName: "house" },
-    { id: 1, productName: "car" },
-    { id: 2, productName: "house" },
-    { id: 1, productName: "car" },
-    { id: 2, productName: "house" },
-    { id: 1, productName: "car" },
-    { id: 2, productName: "house" },
-    { id: 1, productName: "car" },
-    { id: 2, productName: "house" },
-    { id: 1, productName: "car" },
-    { id: 2, productName: "house" },
+  const { items } = useCart();
+  const itemCount = items?.length;
+  console.log("items in the cart", items);
 
-    // Additional products...
-  ];
+  const totalPrice = items.reduce(
+    (total, { product }) => total + product.price,
+    0
+  );
+
+  const fee = 1;
+
+  console.log("CARTITEMS", items);
 
   return (
     <Sheet>
       <SheetTrigger className="group flex items-center -ml-2 p-2 relative">
         <ShoppingCart className="h-6 w-6 flex-shrink-0 text-gray-400 group-hover:text-gray-500" />
-        {amount > 0 && (
+        {itemCount > 0 && (
           <span className="h-5 w-5 flex items-center justify-center bg-blue-600 absolute top-0 -right-[15%] text-xs font-medium text-white rounded-full">
-            {amount}
+            {itemCount}
           </span>
         )}
       </SheetTrigger>
-      <SheetContent className="flex w-full flex-col pr-0 sm:max-w-lg">
+      <SheetContent className="flex w-[400px] flex-col pr-0 sm:max-w-lg">
         <SheetHeader className="space-y-2.5 pr-6">
           <SheetTitle>
-            {amount > 0
-              ? `Your Cart have ${amount} products`
+            {itemCount > 0
+              ? `Your cart have ${itemCount} products`
               : "Your Cart Is Empty"}
           </SheetTitle>
         </SheetHeader>
-        {amount > 0 ? (
+        {itemCount > 0 ? (
           <>
             <div className="flex w-full flex-col pr-6 h-2/3">
-              <ScrollArea className="max-h-full">
-                {products.map((product, i) => (
-                  <CartItem product={product} key={i} />
+              <ScrollArea className="max-h-full p-5">
+                {items.map(({ product }) => (
+                  <CartItem product={product} />
                 ))}
               </ScrollArea>
             </div>
@@ -85,14 +68,14 @@ const Cart = () => {
                 <div className="flex">
                   <span className="flex-1">Transaction Fee</span>
                   <span>
-                    {formatPrice(fee, { currency: "ETB", notation: "compact" })}
+                    {formatPrice(fee, { currency: "USD", notation: "compact" })}
                   </span>
                 </div>
                 <div className="flex">
                   <span className="flex-1">Total</span>
                   <span>
-                    {formatPrice(total, {
-                      currency: "ETB",
+                    {formatPrice(totalPrice + fee, {
+                      currency: "USD",
                       notation: "compact",
                     })}
                   </span>
