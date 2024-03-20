@@ -85,7 +85,7 @@ const Cart = () => {
               <SheetFooter>
                 <SheetTrigger asChild>
                   <Link
-                    href="/cart"
+                    href="/check-out"
                     className={buttonVariants({
                       className: "w-full",
                     })}
@@ -97,7 +97,7 @@ const Cart = () => {
             </div>
           </>
         ) : (
-          <div className="flex h-full flex-col items-center justify-center space-y-1">
+          <div className="flex h-full flex-col items-center justify-center space-y-4">
             <div
               aria-hidden="true"
               className="relative mb-4 h-60 w-60 text-muted-foreground"
@@ -108,19 +108,23 @@ const Cart = () => {
                 alt="empty shopping cart hippo"
               />
             </div>
-            <div className="text-xl font-semibold">Your cart is empty</div>
-            <SheetTrigger asChild>
-              <Link
-                href="/products"
-                className={buttonVariants({
-                  variant: "default",
-                  size: "lg",
-                  className: "text-sm text-muted-foreground",
-                })}
-              >
-                Add items to your cart
-              </Link>
-            </SheetTrigger>
+            <div className="text-xl font-semibold border-b border-red-500">
+              Your cart is empty
+            </div>
+            <div>
+              <SheetTrigger asChild>
+                <Link
+                  href="/products"
+                  className={buttonVariants({
+                    variant: "default",
+                    size: "lg",
+                    className: "text-sm text-muted-foreground",
+                  })}
+                >
+                  Add items to your cart
+                </Link>
+              </SheetTrigger>
+            </div>
           </div>
         )}
       </SheetContent>

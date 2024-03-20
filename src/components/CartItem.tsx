@@ -6,7 +6,11 @@ import { ImageIcon, X } from "lucide-react";
 import Image from "next/image";
 import { useCart } from "@/hooks/use-cart";
 
-const CartItem = ({ product }: { product: Product }) => {
+interface CartItemProps{
+  product:Product
+}
+
+const CartItem = ({ product }: CartItemProps) => {
   console.log("product");
   const { image } = product.images[0];
   const { removeItem } = useCart();

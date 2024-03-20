@@ -13,6 +13,7 @@ import { getServerSideUser } from "@/lib/payload-utils";
 const NavBar = async () => {
   const nextCookies = cookies();
   const { user } = await getServerSideUser(nextCookies);
+  console.log("user in the navbar",user);
   return (
     <div className="sticky bg-white h-16 top-0 z-50 inset-x-0">
       <header className="relative bg-white">
