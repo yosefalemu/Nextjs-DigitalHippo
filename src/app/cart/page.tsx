@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const Page = () => {
+  const router = useRouter();
   const { items, removeItem } = useCart();
 
   const [isMounted, setIsMounted] = useState<boolean>(false);
@@ -188,8 +189,9 @@ const Page = () => {
                 disabled={items.length === 0}
                 className="w-full"
                 size="lg"
+                onClick={() => router.push("shipping")}
               >
-                Checkout
+                Continue shipping
               </Button>
             </div>
           </section>

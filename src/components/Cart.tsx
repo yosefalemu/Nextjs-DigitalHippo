@@ -54,7 +54,7 @@ const Cart = () => {
             <div className="flex w-full flex-col pr-6 h-2/3">
               <ScrollArea className="max-h-full p-5">
                 {items.map(({ product }) => (
-                  <CartItem product={product} />
+                  <CartItem key={product?.id} product={product} />
                 ))}
               </ScrollArea>
             </div>
@@ -85,12 +85,12 @@ const Cart = () => {
               <SheetFooter>
                 <SheetTrigger asChild>
                   <Link
-                    href="/check-out"
+                    href="/cart"
                     className={buttonVariants({
                       className: "w-full",
                     })}
                   >
-                    Continue to Checkout
+                    Continue to Cart
                   </Link>
                 </SheetTrigger>
               </SheetFooter>
