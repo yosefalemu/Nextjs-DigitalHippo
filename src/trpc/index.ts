@@ -4,10 +4,12 @@ import { publicProcedure, router } from "./trpc";
 import { z } from "zod";
 import { getPayloadClient } from "../get-payload";
 import { countryRouter } from "./country-router";
+import { ShippingRouter } from "./shipping-router";
 
 export const appRouter = router({
   auth: authRouter,
   country: countryRouter,
+  shipping: ShippingRouter,
   getInfiniteProducts: publicProcedure
     .input(
       z.object({

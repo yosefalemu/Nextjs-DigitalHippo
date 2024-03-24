@@ -1,5 +1,4 @@
 "use client";
-
 import { Button } from "@/components/ui/button";
 import { PRODUCT_CATEGORIES } from "@/config";
 import { useCart } from "@/hooks/use-cart";
@@ -42,7 +41,6 @@ const Page = () => {
             })}
           >
             <h2 className="sr-only">Items in your shopping cart</h2>
-
             {isMounted && items.length === 0 ? (
               <div className="flex h-full flex-col items-center justify-center space-y-1">
                 <div
