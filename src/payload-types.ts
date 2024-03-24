@@ -13,6 +13,8 @@ export interface Config {
     product_files: ProductFile;
     media: Media;
     orders: Order;
+    rate: Rate;
+    shipping: Shipping;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
   };
@@ -132,6 +134,30 @@ export interface Order {
   _isPaid: boolean;
   user: string | User;
   products: (string | Product)[];
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "rate".
+ */
+export interface Rate {
+  id: string;
+  priceForDiscount: number;
+  pricePerKilometer: number;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "shipping".
+ */
+export interface Shipping {
+  id: string;
+  country?: string | null;
+  phoneNumber?: string | null;
+  city?: string | null;
+  user?: (string | null) | User;
   updatedAt: string;
   createdAt: string;
 }
