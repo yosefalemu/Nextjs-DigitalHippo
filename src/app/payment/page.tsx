@@ -25,8 +25,12 @@ const Payment = () => {
   const [distance, setDistance] = useState<string | null>(null);
   const constantLatitude = 9.033;
   const constantLongitude = 38.75;
-  const latitude = 11.1333;
-  const longitude = 39.6333;
+  const latitude = shippingAddress?.latitude
+    ? parseFloat(shippingAddress?.latitude)
+    : 9.033;
+  const longitude = shippingAddress?.longitude
+    ? parseFloat(shippingAddress?.longitude)
+    : 38.75;
 
   // Function to calculate distance using Haversine formula
   const calculateDistance = (
@@ -63,16 +67,7 @@ const Payment = () => {
     iconUrl: "./location.png",
     iconSize: [28, 28],
   });
-  const markers = [
-    {
-      geocode: [constantLatitude, constantLongitude],
-      popUp: "Starting point",
-    },
-    {
-      geocode: [latitude, longitude],
-      popUp: "Destination point",
-    },
-  ];
+
   console.log("DISTANCE", distance);
 
   return (
@@ -135,7 +130,7 @@ const Payment = () => {
           <div className="grid col-span-7 z-0 overflow-hidden border border-red-500">
             <MapContainer
               center={[latitude, longitude]}
-              zoom={13}
+              zoom={6}
               ref={mapRef}
               style={{ height: "500px", width: "100%" }}
             >
@@ -154,10 +149,10 @@ const Payment = () => {
                 position={[constantLatitude, constantLongitude]}
                 icon={customIcon}
               >
-                <Popup>Starting Point</Popup>
+                <Popup>Starting Addis Ababa</Popup>
               </Marker>
               <Marker position={[latitude, longitude]} icon={customIcon}>
-                <Popup>Destination Point</Popup>
+                <Popup>{`Destination ${shippingAddress?.city}`}</Popup>
               </Marker>
             </MapContainer>
           </div>

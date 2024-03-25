@@ -8,7 +8,7 @@ export const ShippingRouter = router({
     .mutation(async ({ input, ctx }) => {
       console.log("the input", input);
       const { user } = ctx;
-      const { city, country, phoneNumber } = input;
+      const { city, country, phoneNumber, state, latitude, longitude } = input;
       const payload = await getPayloadClient();
       const createdShipping = await payload.create({
         collection: "shipping",
@@ -16,6 +16,9 @@ export const ShippingRouter = router({
           city,
           country,
           phoneNumber,
+          state,
+          latitude,
+          longitude,
           user: user.id,
         },
       });

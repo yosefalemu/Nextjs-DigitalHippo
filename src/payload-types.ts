@@ -157,6 +157,9 @@ export interface Shipping {
   country?: string | null;
   phoneNumber?: string | null;
   city?: string | null;
+  state?: string | null;
+  latitude?: string | null;
+  longitude?: string | null;
   user?: (string | null) | User;
   updatedAt: string;
   createdAt: string;
