@@ -48,6 +48,9 @@ export const Shipping: CollectionConfig = {
       label: "City",
       type: "text",
     },
+    { name: "state", label: "State", type: "text" },
+    { name: "latitude", label: "Latitude", type: "text" },
+    { name: "longitude", label: "Longitude", type: "text" },
     {
       name: "user",
       label: "User",

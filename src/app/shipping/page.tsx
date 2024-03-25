@@ -19,28 +19,37 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { useShipping } from "@/hooks/use-shipping";
+import {
+  Country,
+  City,
+  State,
+  ICity,
+  ICountry,
+  IState,
+} from "country-state-city";
 
 type IndividualCountry = {
   name: string;
   flag: string;
-  root: string;
-  suffix: Array<string>;
-};
-type IndividualCity = {
-  country: string;
-  geonameid: number;
-  name: string;
-  subcountry: string;
 };
 
 const Shipping = () => {
   const { addShippingState } = useShipping();
   const router = useRouter();
+  const allCountry = Country.getAllCountries();
+
   const [selectedCountry, setSelectedCountry] =
     useState<IndividualCountry | null>(null);
-  const [selectedCity, setSelectedCity] = useState<IndividualCity | null>(null);
-  const [cityInSelectedCountry, setCityInSelectedCountry] =
-    useState<Array<object> | null>([]);
+  const [selectedState, setSelectedState] = useState<IState | undefined>(
+    undefined
+  );
+  const [countryState, setCountryState] = useState<IState[] | undefined>(
+    undefined
+  );
+  const [stateCity, setStateCity] = useState<ICity[] | undefined>(undefined);
+  const [selectedCity, setSelectedCity] = useState<ICity | undefined>(
+    undefined
+  );
 
   const {
     data: countryList,
@@ -48,18 +57,10 @@ const Shipping = () => {
     isError: countryError,
   } = trpc.country.getCountry.useQuery();
 
-  const {
-    data: cityList,
-    isLoading: cityLoading,
-    isError: cityError,
-  } = trpc.country.getCity.useQuery();
-
   const basicCountriesProperties =
     countryList?.map((country: any) => ({
       name: country.name.common,
       flag: country.flags.png,
-      root: country.idd.root,
-      suffix: country.idd.suffixes,
     })) || [];
 
   const handleSelectCountry = (countryName: string) => {
@@ -70,27 +71,42 @@ const Shipping = () => {
     );
   };
 
-  const handleSelectCity = (cityName: string) => {
-    setSelectedCity(
-      cityList?.find((item: IndividualCity) => item.name === cityName)
+  const handleSelectState = (stateName: string) => {
+    setSelectedState(
+      countryState?.find((item: IState) => item.name === stateName)
     );
   };
 
-  useEffect(() => {
-    console.log("TESTED");
-    const response = cityList
-      ?.filter((item: any) => item.country === selectedCountry?.name)
-      .sort();
-    setCityInSelectedCountry(response);
-  }, [selectedCountry, selectedCity]);
+  const handleSelectCity = (cityName: string) => {
+    setSelectedCity(stateCity?.find((item: ICity) => item.name === cityName));
+  };
 
-  const geonameId =
-    selectedCity?.geonameid === undefined ? null : selectedCity.geonameid;
-  const {
-    data: dataForChange,
-    isLoading: loadingForChange,
-    isError: errorForChange,
-  } = trpc.country.getCityLatitudeAndLongtiude.useQuery({ geonameId });
+  const mainSelectedCountry: ICountry | undefined = allCountry.find(
+    (item) => item.name === selectedCountry?.name
+  );
+
+  useEffect(() => {
+    const isoCode = mainSelectedCountry?.isoCode
+      ? mainSelectedCountry.isoCode
+      : "";
+    const countryState: IState[] | undefined =
+      State.getStatesOfCountry(isoCode);
+    setCountryState(countryState);
+  }, [mainSelectedCountry?.isoCode]);
+
+  useEffect(() => {
+    const currentCountryIsoCode = mainSelectedCountry?.isoCode
+      ? mainSelectedCountry.isoCode
+      : "";
+    const currentStateIsoCode = selectedState?.isoCode
+      ? selectedState.isoCode
+      : "";
+    const currentStateCities = City.getCitiesOfState(
+      currentCountryIsoCode,
+      currentStateIsoCode
+    );
+    setStateCity(currentStateCities);
+  }, [selectedState?.isoCode]);
 
   const {
     register,
@@ -104,7 +120,6 @@ const Shipping = () => {
   const handleInputChange = (fieldName: string) => {
     clearErrors(fieldName as keyof TShippingValidator);
   };
-
   const {
     mutate,
     isLoading: loadingCreateShipping,
@@ -113,30 +128,49 @@ const Shipping = () => {
     data,
   } = trpc.shipping.CreateShipping.useMutation({
     onSuccess: (data) => {
+      console.log("DATA FOR SUCCESS", data);
       const shippingItem = data.createdShipping;
       addShippingState(shippingItem);
-      console.log("SHIPPINGiTEM", shippingItem);
       toast.success("Shipping");
       setTimeout(() => {
         router.push("/payment");
       }, 3000);
     },
     onError: (err) => {
+      console.log("ERROR FOR SUBMIT", err);
       console.log(err);
     },
   });
 
-  const onSubmit = ({ city, country, phoneNumber }: TShippingValidator) => {
-    mutate({ city, country, phoneNumber });
+  const onSubmit = ({
+    city,
+    country,
+    phoneNumber,
+    state,
+    latitude,
+    longitude,
+  }: TShippingValidator) => {
+    console.log("CITY", city);
+    console.log("COUNTRY", country);
+    console.log("PHONENUMBER", phoneNumber);
+    console.log("STATE", state);
+    console.log("LATITUDE", latitude);
+    console.log("LONGITUDE", longitude);
+    mutate({
+      city,
+      country,
+      phoneNumber,
+      state,
+      latitude,
+      longitude,
+    });
   };
-  // console.log("COUNTRYLIST", countryList);
-  // console.log("CITYLIST", cityList);
-  // console.log("SELECTEDCOUNTRY", selectedCountry);
-  // console.log("CITIES IN THE COUNTRY", cityInSelectedCountry);
-  // console.log("SELECTEDCITY", selectedCity);
-  console.log("DATAFORCHAGE", dataForChange);
-  console.log("DATAFORCHANGELOADING", loadingForChange);
-  console.log("DATAFORCHANGEEROOR", errorForChange);
+  console.log("COUNTRIES", mainSelectedCountry);
+  console.log("COUNTRYSTATES", countryState);
+  console.log("SELECTED CITY", selectedCity);
+  console.log("SELECTED COUNTRY", selectedCountry);
+  console.log("SELECTED STATE", selectedState);
+  console.log("ERROR WHILE CREATING SHIPPING", errorCreateShipping);
 
   return (
     <div className="bg-white">
@@ -158,6 +192,7 @@ const Shipping = () => {
                 )}
                 {!countryLoading && !countryError && (
                   <Input
+                    id="country"
                     {...register("country")}
                     placeholder="Search country..."
                     list="countries"
@@ -182,79 +217,117 @@ const Shipping = () => {
                 )}
               </div>
               <div className="grid gap-2 py-2">
+                <Label htmlFor="phoneNumber" className="text-md">
+                  Phone number
+                </Label>
                 {countryLoading || !selectedCountry ? (
                   <Skeleton className="w-full h-[50px] rounded-sm" />
-                ) : selectedCountry ? (
-                  <>
-                    <Label htmlFor="phoneNumber" className="text-md">
-                      Phone number
-                    </Label>
-                    <div className="grid gap-x-3">
-                      <div className="grid justify-center items-center border-b border-gray-900">
-                        <Image
-                          src={`${selectedCountry.flag}`}
-                          width={50}
-                          height={50}
-                          alt={selectedCountry.name}
-                        />
-                      </div>
-                      <div className="grid col-start-2 items-center border-b border-gray-900 justify-center">
-                        {selectedCountry.root}
-                        {selectedCountry.suffix}
-                      </div>
-                      <div className="grid col-start-3">
-                        <Input
-                          {...register("phoneNumber")}
-                          placeholder="Enter your phone number"
-                          className={cn("w-full h-full px-2 py-3", {
-                            "focus-visible:ring-red-600": errors.phoneNumber,
-                          })}
-                          onChange={() => handleInputChange("phoneNumber")}
-                        />
-                      </div>
+                ) : (
+                  <div className="grid gap-x-3">
+                    <div className="grid justify-center items-center border-b border-gray-900">
+                      <Image
+                        src={`${selectedCountry?.flag}`}
+                        width={50}
+                        height={50}
+                        alt={selectedCountry?.name}
+                      />
                     </div>
-                    {errors.phoneNumber && (
-                      <p className="text-red-500">
-                        {errors.phoneNumber.message}
-                      </p>
-                    )}
-                  </>
-                ) : null}
+                    <div className="grid col-start-2 items-center border-b border-gray-900 justify-center">
+                      {mainSelectedCountry ? (
+                        mainSelectedCountry.phonecode
+                      ) : (
+                        <Skeleton className="w-full h-[50px] rounded-sm" />
+                      )}
+                    </div>
+                    <div className="grid col-start-3">
+                      <Input
+                        id="phoneNumber"
+                        {...register("phoneNumber")}
+                        placeholder="Enter your phone number"
+                        className={cn("w-full h-full px-2 py-3", {
+                          "focus-visible:ring-red-600": errors.phoneNumber,
+                        })}
+                        onChange={() => handleInputChange("phoneNumber")}
+                      />
+                    </div>
+                  </div>
+                )}
+                {errors.phoneNumber && (
+                  <p className="text-red-500">{errors.phoneNumber.message}</p>
+                )}
               </div>
               <div className="grid gap-2 py-2">
-                {countryLoading || cityLoading || !selectedCountry ? (
+                <Label htmlFor="state" className="text-md">
+                  State
+                </Label>
+                {countryLoading || !selectedCountry ? (
                   <Skeleton className="w-full h-[50px] rounded-sm" />
-                ) : cityInSelectedCountry ? (
+                ) : (
                   <>
-                    <Label htmlFor="city" className="text-md">
-                      City
-                    </Label>
-                    {cityLoading && (
-                      <Skeleton className="w-full h-[50px] rounded-sm" />
+                    <Input
+                      id="state"
+                      {...register("state")}
+                      placeholder="Search country..."
+                      list="states"
+                      onChange={(e) => {
+                        handleInputChange("state");
+                        handleSelectState(e.target.value);
+                      }}
+                      className={cn({
+                        "focus-visible:ring-red-600": errors.state,
+                      })}
+                    />
+                    <datalist id="states">
+                      {countryState?.map((item: IState, index: number) => (
+                        <option key={index} value={item.name} />
+                      ))}
+                    </datalist>
+                    {errors.country && (
+                      <p className="text-red-500">{errors.state?.message}</p>
                     )}
-                    {!cityLoading && !cityError && (
-                      <Input
-                        placeholder="Addis Ababa"
-                        {...register("city")}
-                        list="cities"
-                        onChange={(e) => {
-                          handleInputChange("city");
-                          handleSelectCity(e.target.value);
-                        }}
-                      />
-                    )}
+                  </>
+                )}
+              </div>
+              <div className="grid gap-2 py-2">
+                <Label htmlFor="city" className="text-md">
+                  City
+                </Label>
+                {countryLoading || !selectedCountry || !selectedState ? (
+                  <Skeleton className="w-full h-[50px] rounded-sm" />
+                ) : (
+                  <>
+                    <Input
+                      id="city"
+                      placeholder="Addis Ababa"
+                      {...register("city")}
+                      list="cities"
+                      onChange={(e) => {
+                        handleInputChange("city");
+                        handleSelectCity(e.target.value);
+                      }}
+                    />
                     <datalist id="cities">
-                      {cityInSelectedCountry?.map(
-                        (item: any, index: number) => (
-                          <option key={index} value={item.name} />
-                        )
-                      )}
+                      {stateCity?.map((item: ICity, index: number) => (
+                        <option key={index} value={item.name} />
+                      ))}
                     </datalist>
                     {errors.city && (
                       <p className="text-red-500">{errors.city.message}</p>
                     )}
                   </>
-                ) : null}
+                )}
+              </div>
+              <div className="grid py-2">
+                <Input
+                  {...register("latitude")}
+                  value={selectedCity?.latitude ? selectedCity.latitude : ""}
+                />
+              </div>
+              <div className="grid py-2">
+                <Input
+                  {...register("longitude")}
+                  value={selectedCity?.longitude ? selectedCity.longitude : ""}
+                />
               </div>
               <div className="grid py-2">
                 {loadingCreateShipping ? (
@@ -278,6 +351,7 @@ const Shipping = () => {
                       className: "disabled:cursor-not-allowed w-full",
                     })}
                     disabled={isSuccess}
+                    type="submit"
                   >
                     Checkout
                   </Button>
