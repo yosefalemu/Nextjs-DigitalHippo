@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { PRODUCT_CATEGORIES } from "@/config";
 import { useCart } from "@/hooks/use-cart";
 import { cn, formatPrice } from "@/lib/utils";
-import { trpc } from "@/trpc/client";
 import { Check, Loader2, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -16,7 +15,10 @@ const Page = () => {
 
   const [isMounted, setIsMounted] = useState<boolean>(false);
   useEffect(() => {
-    setIsMounted(true);
+    const timeOut = setTimeout(() => {
+      setIsMounted(true);
+    }, 2000);
+    return () => clearTimeout(timeOut);
   }, []);
 
   const cartTotal = items.reduce(
@@ -142,7 +144,6 @@ const Page = () => {
 
           <section className="mt-16 rounded-lg bg-gray-50 px-4 py-6 sm:p-6 lg:col-span-5 lg:mt-0 lg:p-8">
             <h2 className="text-lg font-medium text-gray-900">Order summary</h2>
-
             <div className="mt-6 space-y-4">
               <div className="flex items-center justify-between">
                 <p className="text-sm text-gray-600">Subtotal</p>
@@ -181,7 +182,6 @@ const Page = () => {
                 </div>
               </div>
             </div>
-
             <div className="mt-6">
               <Button
                 disabled={items.length === 0}

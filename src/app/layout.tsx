@@ -25,9 +25,9 @@ export default function RootLayout({
       <body
         className={cn("relative h-full font-sans antialiased", inter.className)}
       >
-        <main className="relative flex flex-col min-h-screen border-2 border-red-400">
+        <main className="relative flex flex-col min-h-screen">
           <Providers>
-            <div className="flex-grow flex-1 border-4 border-green-500">
+            <div className="flex-grow flex-1">
               <NavBar />
               {children}
             </div>

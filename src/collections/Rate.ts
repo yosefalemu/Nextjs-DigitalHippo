@@ -25,5 +25,11 @@ export const Rate: CollectionConfig = {
       type: "number",
       required: true,
     },
+    {
+      name: "discountAmount",
+      label: "Discount Amount",
+      type: "number",
+      required: true,
+    },
   ],
 };

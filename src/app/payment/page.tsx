@@ -11,12 +11,11 @@ import {
   Polyline,
   Popup,
   TileLayer,
-  useMap,
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import { useRef, useState, useEffect } from "react";
-import MarkerClusterGroup from "react-leaflet-cluster";
-import { Icon, divIcon, point } from "leaflet";
+import { Icon } from "leaflet";
+import PaymentBottom from "@/components/PaymentBottom";
 
 const Payment = () => {
   const { shippingAddress } = useShipping();
@@ -68,6 +67,22 @@ const Payment = () => {
     iconSize: [28, 28],
   });
 
+  const cartTotal = items.reduce(
+    (total, { product }) => total + product.price,
+    0
+  );
+  const [isMounted, setIsMounted] = useState<boolean>(false);
+
+  useEffect(() => {
+    const timeOut = setTimeout(() => {
+      setIsMounted(true);
+    }, 2000);
+    return () => clearTimeout(timeOut);
+  }, []);
+
+  const productIds = items.map(({ product }) => product.id);
+
+  console.log("PRODUCT IDS", productIds);
   console.log("DISTANCE", distance);
 
   return (
@@ -127,10 +142,10 @@ const Payment = () => {
               })}
             </ul>
           </div>
-          <div className="grid col-span-7 z-0 overflow-hidden border border-red-500">
+          <div className="grid col-span-7 -z-0 overflow-hidden">
             <MapContainer
               center={[latitude, longitude]}
-              zoom={6}
+              zoom={5}
               ref={mapRef}
               style={{ height: "500px", width: "100%" }}
             >
@@ -155,6 +170,23 @@ const Payment = () => {
                 <Popup>{`Destination ${shippingAddress?.city}`}</Popup>
               </Marker>
             </MapContainer>
+          </div>
+          <div className="grid col-span-5 mt-28">
+            <Image
+              src={"/hippo-empty-cart.png"}
+              height={900}
+              width={900}
+              className="w-full h-auto"
+              alt="MY LOGO"
+            />
+          </div>
+          <div className="grid col-span-7 mt-28">
+            <PaymentBottom
+              distance={distance}
+              cartTotal={cartTotal}
+              isMounted={isMounted}
+              productIds={productIds}
+            />
           </div>
         </div>
       </div>

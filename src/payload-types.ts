@@ -145,6 +145,7 @@ export interface Rate {
   id: string;
   priceForDiscount: number;
   pricePerKilometer: number;
+  discountAmount: number;
   updatedAt: string;
   createdAt: string;
 }

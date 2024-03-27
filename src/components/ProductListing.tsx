@@ -15,9 +15,10 @@ const ProductListing = ({ product, index }: ProductListingProps) => {
   console.log("index of the product listing", index);
 
   useEffect(() => {
-    setTimeout(() => {
+    const timeOut = setTimeout(() => {
       setIsVisible(true);
     }, index * 75);
+    return () => clearTimeout(timeOut);
   }, [index]);
 
   if (!isVisible || !product) {

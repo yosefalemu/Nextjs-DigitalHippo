@@ -17,10 +17,11 @@ export const useAuth = () => {
       );
       if (!res.ok) throw new Error();
       toast.success("Signed out successfully");
-      setTimeout(() => {
+      const timeOut = setTimeout(() => {
         router.push("/sign-in");
         router.refresh();
       }, 2000);
+      return () => clearTimeout(timeOut);
     } catch (error) {
       toast.error("Couldn't sign out, please try again.");
     }
