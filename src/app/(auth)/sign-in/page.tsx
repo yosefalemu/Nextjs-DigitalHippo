@@ -61,9 +61,10 @@ const SignIn = () => {
         router.push("/sell");
         return;
       }
-      setTimeout(() => {
+      const timeOut = setTimeout(() => {
         router.push("/");
       }, 2000);
+      return () => clearTimeout(timeOut);
     },
   });
 

@@ -132,9 +132,10 @@ const Shipping = () => {
       const shippingItem = data.createdShipping;
       addShippingState(shippingItem);
       toast.success("Shipping");
-      setTimeout(() => {
+      const timeOut = setTimeout(() => {
         router.push("/payment");
       }, 3000);
+      return () => clearTimeout(timeOut);
     },
     onError: (err) => {
       console.log("ERROR FOR SUBMIT", err);
@@ -318,16 +319,34 @@ const Shipping = () => {
                 )}
               </div>
               <div className="grid py-2">
-                <Input
-                  {...register("latitude")}
-                  value={selectedCity?.latitude ? selectedCity.latitude : ""}
-                />
+                <Label htmlFor="city" className="text-md">
+                  Latitude
+                </Label>
+                {!selectedCity && (
+                  <Skeleton className="w-full h-[50px] rounded-sm" />
+                )}
+                {selectedCity && (
+                  <Input
+                    {...register("latitude")}
+                    value={selectedCity?.latitude ? selectedCity.latitude : ""}
+                  />
+                )}
               </div>
               <div className="grid py-2">
-                <Input
-                  {...register("longitude")}
-                  value={selectedCity?.longitude ? selectedCity.longitude : ""}
-                />
+                <Label htmlFor="city" className="text-md">
+                  Longitude
+                </Label>
+                {!selectedCity && (
+                  <Skeleton className="w-full h-[50px] rounded-sm" />
+                )}
+                {selectedCity && (
+                  <Input
+                    {...register("longitude")}
+                    value={
+                      selectedCity?.longitude ? selectedCity.longitude : ""
+                    }
+                  />
+                )}
               </div>
               <div className="grid py-2">
                 {loadingCreateShipping ? (
