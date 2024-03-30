@@ -30,8 +30,14 @@ const Payment = () => {
   const longitude = shippingAddress?.longitude
     ? parseFloat(shippingAddress?.longitude)
     : 38.75;
+  const customIcon = new Icon({
+    iconUrl: "./location.png",
+    iconSize: [28, 28],
+  });
 
   // Function to calculate distance using Haversine formula
+  // Based on the latitude and longitude of usee location
+  // This distance the straight distance not the actual on the ground
   const calculateDistance = (
     lat1: number,
     lon1: number,
@@ -62,11 +68,6 @@ const Payment = () => {
     setDistance(distance.toFixed(2));
   }, [latitude, longitude]);
 
-  const customIcon = new Icon({
-    iconUrl: "./location.png",
-    iconSize: [28, 28],
-  });
-
   const cartTotal = items.reduce(
     (total, { product }) => total + product.price,
     0
@@ -81,6 +82,7 @@ const Payment = () => {
   }, []);
 
   const productIds = items.map(({ product }) => product.id);
+  const shippingId = shippingAddress?.id ? shippingAddress.id : "";
 
   console.log("PRODUCT IDS", productIds);
   console.log("DISTANCE", distance);
@@ -186,6 +188,7 @@ const Payment = () => {
               cartTotal={cartTotal}
               isMounted={isMounted}
               productIds={productIds}
+              shippingId={shippingId}
             />
           </div>
         </div>

@@ -233,9 +233,9 @@ const Shipping = () => {
                         alt={selectedCountry?.name}
                       />
                     </div>
-                    <div className="grid col-start-2 items-center border-b border-gray-900 justify-center">
+                    <div className="grid col-start-2 items-center border-b border-gray-900 justify-center text-sm">
                       {mainSelectedCountry ? (
-                        mainSelectedCountry.phonecode
+                        "+" + mainSelectedCountry.phonecode
                       ) : (
                         <Skeleton className="w-full h-[50px] rounded-sm" />
                       )}
