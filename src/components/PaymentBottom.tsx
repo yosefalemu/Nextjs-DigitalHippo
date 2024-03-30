@@ -3,12 +3,14 @@ import { trpc } from "@/trpc/client";
 import { BadgePercent, Loader2 } from "lucide-react";
 import { Rate } from "@/payload-types";
 import { Button } from "./ui/button";
+import { useRouter } from "next/navigation";
 
 interface PaymentBottomProps {
   distance: string | null;
   cartTotal: number;
   isMounted: boolean;
   productIds: string[];
+  shippingId: string;
 }
 
 const PaymentBottom = ({
@@ -16,22 +18,31 @@ const PaymentBottom = ({
   cartTotal,
   isMounted,
   productIds,
+  shippingId,
 }: PaymentBottomProps) => {
+  const router = useRouter();
   const { data: ratesFound } = trpc.rate.getRate.useQuery();
-  const rates = ratesFound?.rateAvailables[0];
-  const ratesPerKM = rates?.pricePerKilometer ? rates.pricePerKilometer : 0;
-  const priceForDiscount = rates?.priceForDiscount ? rates.priceForDiscount : 0;
-  const discountAmount = rates?.discountAmount ? rates.discountAmount : 0;
-  const reducedMoney =
-    cartTotal >= priceForDiscount ? cartTotal * discountAmount : 0;
-  const shippingCost =
-    (rates?.pricePerKilometer ? rates.pricePerKilometer : 0) *
+  console.log("rate FOUND", ratesFound);
+  const rate = ratesFound?.rateAvailables[0];
+  console.log("RATE", rate);
+
+  const priceForDiscount = rate?.priceForDiscount ? rate.priceForDiscount : 0;
+  const ratesPerKM = rate?.pricePerKilometer ? rate.pricePerKilometer : 0;
+  const shippingFee =
+    (rate?.pricePerKilometer ? rate.pricePerKilometer : 0) *
     (distance ? parseFloat(distance) : 0);
+  const percentageDiscount = rate?.percentageDiscount
+    ? rate.percentageDiscount / 100
+    : 0;
+  const reducedMoney =
+    cartTotal >= priceForDiscount ? cartTotal * percentageDiscount : 0;
+
+  const vatAmount = cartTotal * 0.15;
 
   const { mutate: CreateCheckoutSession, isLoading } =
     trpc.payment.createSession.useMutation({
-      onSuccess: () => {
-        console.log("SUCCESS");
+      onSuccess: ({ url }) => {
+        if (url) router.push(url);
       },
       onError: () => {
         console.log("ERROR");
@@ -51,9 +62,10 @@ const PaymentBottom = ({
           <h2 className="text-lg font-medium text-green-500">Discount exist</h2>
         </div>
       ) : (
-        <div className="mt-2 text-center">
-          <h2 className="text-lg font-medium text-green-500">
-            {` Since your total price is less than ${priceForDiscount} you don't have discount`}
+        <div className="md:flex items-center gap-2 justify-center mt-2">
+          <BadgePercent className="text-red-500" />
+          <h2 className="text-lg font-medium text-red-500">
+            Discount does not exist
           </h2>
         </div>
       )}
@@ -71,7 +83,6 @@ const PaymentBottom = ({
             )}
           </p>
         </div>
-
         <div className="flex items-center justify-between border-t border-gray-200 pt-4">
           <div className="flex items-center text-sm text-muted-foreground">
             <span>Total distance</span>
@@ -102,7 +113,7 @@ const PaymentBottom = ({
           </div>
           <div className="text-sm font-medium text-gray-900">
             {isMounted ? (
-              formatPrice(shippingCost)
+              formatPrice(shippingFee)
             ) : (
               <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
             )}
@@ -111,7 +122,7 @@ const PaymentBottom = ({
 
         <div className="flex items-center justify-between border-t border-gray-200 pt-4">
           <div className="flex items-center text-sm text-muted-foreground">
-            <span>Discount Amount</span>
+            <span>Discount Available</span>
           </div>
           <div className="text-sm font-medium text-gray-900">
             {isMounted ? (
@@ -126,7 +137,7 @@ const PaymentBottom = ({
           <div className="text-base font-medium text-gray-900">Total Price</div>
           <div className="text-base font-medium text-gray-900">
             {isMounted ? (
-              formatPrice(cartTotal + shippingCost - reducedMoney)
+              formatPrice(cartTotal + shippingFee - reducedMoney)
             ) : (
               <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
             )}
@@ -142,7 +153,17 @@ const PaymentBottom = ({
             <Button
               className="w-full mt-6"
               size="lg"
-              onClick={() => CreateCheckoutSession({ productIds })}
+              onClick={() =>
+                CreateCheckoutSession({
+                  productIds,
+                  shippingId,
+                  couponId: rate?.discountId ? rate.discountId : "",
+                  shippingFee,
+                  distance: distance ? distance : "",
+                  cartTotal,
+                  priceForDiscount,
+                })
+              }
             >
               Continue to pay
             </Button>

@@ -5,7 +5,7 @@ import { z } from "zod";
 import { getPayloadClient } from "../get-payload";
 import { countryRouter } from "./country-router";
 import { ShippingRouter } from "./shipping-router";
-import { rateRouter } from "./rate";
+import { rateRouter } from "./rate-router";
 import { paymentRouter } from "./payment-router";
 
 export const appRouter = router({

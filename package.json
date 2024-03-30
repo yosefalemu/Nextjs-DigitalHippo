@@ -48,6 +48,7 @@
     "react-phone-input-2": "^2.15.1",
     "react-phone-number-input": "^3.3.9",
     "sonner": "^1.4.3",
+    "stripe": "^14.22.0",
     "swiper": "^11.0.7",
     "tailwind-merge": "^2.2.1",
     "tailwindcss-animate": "^1.0.7",

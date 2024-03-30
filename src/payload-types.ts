@@ -134,18 +134,7 @@ export interface Order {
   _isPaid: boolean;
   user: string | User;
   products: (string | Product)[];
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "rate".
- */
-export interface Rate {
-  id: string;
-  priceForDiscount: number;
-  pricePerKilometer: number;
-  discountAmount: number;
+  shipping: string | Shipping;
   updatedAt: string;
   createdAt: string;
 }
@@ -162,6 +151,20 @@ export interface Shipping {
   latitude?: string | null;
   longitude?: string | null;
   user?: (string | null) | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "rate".
+ */
+export interface Rate {
+  id: string;
+  discountId: string;
+  discountName: string;
+  priceForDiscount: number;
+  pricePerKilometer: number;
+  percentageDiscount: number;
   updatedAt: string;
   createdAt: string;
 }
