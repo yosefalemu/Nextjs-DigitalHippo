@@ -1,9 +1,10 @@
+"use client"
 import { formatPrice } from "@/lib/utils";
 import { trpc } from "@/trpc/client";
 import { BadgePercent, Loader2 } from "lucide-react";
-import { Rate } from "@/payload-types";
 import { Button } from "./ui/button";
 import { useRouter } from "next/navigation";
+import { useCart } from "@/hooks/use-cart";
 
 interface PaymentBottomProps {
   distance: string | null;
@@ -21,6 +22,7 @@ const PaymentBottom = ({
   shippingId,
 }: PaymentBottomProps) => {
   const router = useRouter();
+  const { clearCart } = useCart();
   const { data: ratesFound } = trpc.rate.getRate.useQuery();
   console.log("rate FOUND", ratesFound);
   const rate = ratesFound?.rateAvailables[0];
@@ -37,11 +39,10 @@ const PaymentBottom = ({
   const reducedMoney =
     cartTotal >= priceForDiscount ? cartTotal * percentageDiscount : 0;
 
-  const vatAmount = cartTotal * 0.15;
-
   const { mutate: CreateCheckoutSession, isLoading } =
     trpc.payment.createSession.useMutation({
       onSuccess: ({ url }) => {
+        clearCart();
         if (url) router.push(url);
       },
       onError: () => {
@@ -162,6 +163,7 @@ const PaymentBottom = ({
                   distance: distance ? distance : "",
                   cartTotal,
                   priceForDiscount,
+                  totalPrice: cartTotal + shippingFee - reducedMoney,
                 })
               }
             >
