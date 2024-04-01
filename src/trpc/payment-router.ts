@@ -16,6 +16,7 @@ export const paymentRouter = router({
         distance: z.string(),
         cartTotal: z.number(),
         priceForDiscount: z.number(),
+        totalPrice: z.number(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -27,6 +28,7 @@ export const paymentRouter = router({
         shippingFee,
         cartTotal,
         priceForDiscount,
+        totalPrice,
       } = input;
       const { user } = ctx;
       if (productIds.length === 0) {
@@ -75,12 +77,16 @@ export const paymentRouter = router({
         const discounts =
           cartTotal >= priceForDiscount ? [{ coupon: couponId }] : [];
         const stripeSession = await stripe.checkout.sessions.create({
-          success_url: `${process.env.NEXT_PUBLIC_SERVER_URL}/thank-you?orderId=${order.id}`,
+          success_url: `${process.env.NEXT_PUBLIC_SERVER_URL}/thank-you?orderId=${order.id}&session_id={CHECKOUT_SESSION_ID}`,
           cancel_url: `${process.env.NEXT_PUBLIC_SERVER_URL}/cart`,
           mode: "payment",
           metadata: {
             userId: user.id,
             orderId: order.id,
+            country: shippingDetail[0].country!,
+            city: shippingDetail[0].city!,
+            distance: distance,
+            totalPrice: totalPrice,
           },
           line_items,
           shipping_options: [
@@ -92,11 +98,6 @@ export const paymentRouter = router({
                   currency: "USD",
                 },
                 display_name: "Reliable shipping",
-                metadata: {
-                  Contry: shippingDetail[0].country!,
-                  city: shippingDetail[0].city!,
-                  Distance: distance,
-                },
               },
             },
           ],
@@ -109,5 +110,21 @@ export const paymentRouter = router({
         console.log("ERROR FOUND", err);
         return { url: null };
       }
+    }),
+  pollOrderStatus: privateProcedure
+    .input(z.object({ orderId: z.string() }))
+    .query(async ({ input, ctx }) => {
+      const { orderId } = input;
+      console.log("ORDERID", orderId);
+      const payload = await getPayloadClient();
+      const { docs: orders } = await payload.find({
+        collection: "orders",
+        where: { id: { equals: orderId } },
+      });
+      if (orders.length === 0) {
+        throw new TRPCError({ code: "NOT_FOUND" });
+      }
+      const [order] = orders;
+      return { isPaid: order._isPaid };
     }),
 });
